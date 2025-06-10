@@ -1,47 +1,48 @@
-# Web Search RAG Assistant
+# Claude Agent with LangGraph
 
-A command-line tool that searches the web for information and generates solutions using OpenAI's GPT model with RAG (Retrieval-Augmented Generation).
-
-## Features
-
-- Web search using SerpAPI
-- Text extraction from web pages
-- Vector storage using FAISS
-- RAG-based solution generation using OpenAI's GPT model
-- Comprehensive error handling and logging
+This project implements a Claude agent using LangGraph that can interact with Claude's tools like bash and computer_use.
 
 ## Setup
 
-1. Install dependencies:
+1. Create a virtual environment (recommended):
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Set up environment variables:
-```bash
-export OPENAI_API_KEY="your-openai-api-key"
-export SERPAPI_KEY="your-serpapi-key"
+3. Create a `.env` file in the project root and add your Anthropic API key:
+```
+ANTHROPIC_API_KEY=your_api_key_here
 ```
 
 ## Usage
 
-Ask a question:
+Run the agent:
 ```bash
-python main.py ask "How do I implement authentication in FastAPI?"
+python main.py
 ```
 
-The tool will:
-1. Search the web for relevant information
-2. Extract and process the content
-3. Build a vector store for semantic search
-4. Retrieve the most relevant chunks
-5. Generate a detailed solution using GPT-4
+The agent is configured with two tools:
+- `bash`: Execute bash commands in the terminal
+- `computer_use`: Use the computer to perform tasks
 
-## Configuration
+The agent uses Claude 3 Sonnet to process messages and decide when to use tools. When Claude needs to use a tool, it will format its response with a special `<tool_call>` tag containing the tool name and parameters.
 
-You can modify the following settings in `config.py`:
-- `MAX_SEARCH_RESULTS`: Number of search results to process (default: 5)
-- `CHUNK_SIZE`: Size of text chunks for vector store (default: 1000)
-- `CHUNK_OVERLAP`: Overlap between chunks (default: 200)
-- `TOP_K_CHUNKS`: Number of chunks to retrieve (default: 5)
-- `MODEL_NAME`: OpenAI model to use (default: "gpt-4") 
+## Example
+
+The example in `main.py` shows how to use the agent to list files in the current directory using the bash tool. You can modify the initial message to test different interactions with the agent.
+
+## Project Structure
+
+- `main.py`: Contains the main implementation of the Claude agent using LangGraph
+- `requirements.txt`: Lists all Python dependencies
+- `.env`: Contains your Anthropic API key (create this file yourself)
+
+## Note
+
+This is a basic implementation that can be extended with more tools and functionality. The tool execution is currently mocked - you'll need to implement actual tool execution logic for your specific use case. 
