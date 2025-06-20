@@ -44,7 +44,13 @@ tools = [
         name="Command Executor",
         func=run_shell_command,
         description="""Executes shell commands on the local machine.
-        If the user asks to open/run/launch/execute a program, search the web for the program's executable path, then execute a command.
+        If the user asks to open/run/launch/execute a program, do it using a command.
+        If the user asks to open a file, do it using a command.
+        If the user asks to open a folder, do it using a command.
+        If the user asks to open a website, do it using a command.
+        If the user asks to open a document, do it using a command.
+        If the user asks to open a spreadsheet, do it using a command.
+        If the user asks to open a presentation, do it using a command.
         """
     )
 ]

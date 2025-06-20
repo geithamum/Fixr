@@ -1,83 +1,70 @@
-import asyncio
-import json
+import os
+from dotenv import load_dotenv
+from langchain.agents import initialize_agent, Tool
+from langchain.agents.agent_types import AgentType
+from langchain.chat_models import ChatOllama
+from langchain.memory import ConversationBufferWindowMemory
+from langchain.utilities.serpapi import SerpAPIWrapper
 import subprocess
-import requests
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
-from datetime import datetime
-import logging
-from .cache import PromptCache
 
-def ask_ollama(prompt, model="phi4"):
-    response = requests.post("http://localhost:11434/api/generate", json={
-        "model": model,
-        "prompt": prompt,
-        "stream": False
-    })
-    return response.json()["response"]
+# Load environment variables from .env file
+load_dotenv()
 
-def run_command(cmd):
+# Get credentials and settings from env
+SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "phi4")
+
+# Memory buffer window
+memory = ConversationBufferWindowMemory(k=5, memory_key="chat_history", return_messages=True)
+
+# LLM using Ollama
+llm = ChatOllama(model=OLLAMA_MODEL)
+
+# SerpAPI tool
+search = SerpAPIWrapper(serpapi_api_key=SERPAPI_API_KEY)
+
+# Execute shell commands
+def execute_command_tool(input: str) -> str:
     try:
-        subprocess.Popen(cmd, shell=True)
-        print(f"✔️ Ran: {cmd}")
+        result = subprocess.check_output(input, shell=True, stderr=subprocess.STDOUT, timeout=5)
+        return result.decode("utf-8")
+    except subprocess.CalledProcessError as e:
+        return f"Error: {e.output.decode('utf-8')}"
     except Exception as e:
-        print(f"❌ Error: {e}")
+        return f"Exception: {str(e)}"
 
+# Define tools
+tools = [
+    Tool(
+        name="Search",
+        func=search.run,
+        description="Useful for answering questions about current events or looking up facts."
+    ),
+    Tool(
+        name="Execute Command",
+        func=execute_command_tool,
+        description="Executes shell commands. Use with caution."
+    )
+]
+
+# Initialize the agent
+agent = initialize_agent(
+    tools=tools,
+    llm=llm,
+    agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
+    verbose=True,
+    memory=memory
+)
+
+# Chat loop
 def main():
-    user_input = input("🧠 What do you want Fixr to do? > ")
-    ollama_prompt = f"Write a Windows command to: {user_input}\nOnly output the CMD command."
-    command = ask_ollama(ollama_prompt).strip()
-    print(f"💻 Generated Command:\n{command}")
-    confirm = input("Run this command? (y/n): ")
-    if confirm.lower().startswith("y"):
-        run_command(command)
-
-class OllamaLLM:
-    """Ollama language model interface"""
-    
-    def __init__(self, base_url: str = "http://localhost:11434", model: str = "llama2"):
-        self.base_url = base_url
-        self.model = model
-        self.cache = PromptCache()
-        self.logger = logging.getLogger(__name__)
-    
-    async def generate_response(self, prompt: str, context: str = "") -> str:
-        """Generate response using Ollama"""
-        try:
-            full_prompt = f"{context}\n\nUser: {prompt}\n\nAssistant:"
-            
-            # Try to get response from cache first
-            cached_response = self.cache.get(full_prompt)
-            if cached_response is not None:
-                self.logger.info("Cache hit for prompt")
-                return cached_response
-            
-            self.logger.info("Cache miss, generating new response")
-            
-            data = {
-                "model": self.model,
-                "prompt": full_prompt,
-                "stream": False
-            }
-            
-            response = requests.post(
-                f"{self.base_url}/api/generate",
-                json=data,
-                timeout=60
-            )
-            response.raise_for_status()
-            
-            result = response.json()
-            generated_response = result.get('response', 'No response generated')
-            
-            # Cache the new response
-            self.cache.put(full_prompt, generated_response)
-            
-            return generated_response
-            
-        except Exception as e:
-            self.logger.error(f"LLM generation error: {str(e)}")
-            return f"Error generating response: {str(e)}"
+    print("Chat agent is running. Type 'exit' to quit.")
+    while True:
+        user_input = input("You: ")
+        if user_input.lower() == "exit":
+            break
+        response = agent.run(user_input)
+        print(f"Agent: {response}")
 
 if __name__ == "__main__":
     main()
