@@ -1,0 +1,29 @@
+{
+  "name": "fixr-ai-agent",
+  "version": "1.0.0",
+  "description": "AI tech support agent for the bolt hackathon",
+  "main": "agent.py",
+  "scripts": {
+    "install-mcp-deps": "npm install -g mcp-server-commands @modelcontextprotocol/server-memory"
+  },
+  "keywords": [
+    "ai",
+    "tech-support",
+    "mcp",
+    "agent"
+  ],
+  "authors": [
+    "Geith Amum",
+    "Neil Bhalla"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "mcp-server-commands": "latest",
+    "@modelcontextprotocol/server-memory": "latest"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": ""
+  }
+}
