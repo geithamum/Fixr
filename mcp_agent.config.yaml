@@ -8,9 +8,6 @@ mcp:
     everything-search:
       command: "uvx"
       args: ["mcp-server-everything-search"]
-    desktop-commander:
-      command: "npx"
-      args: ["-y ", "@wonderwhy-er/desktop-commander"]
     mcp-server-commands:
       command: "npx"
       args: ["mcp-server-commands"]
@@ -19,9 +16,4 @@ mcp:
       args: [
         "-y", 
         "@modelcontextprotocol/server-memory"
-      ]
-    cli-mcp-server:
-      command: "uvx"
-      args: [
-        'cli-mcp-server'
       ]
