@@ -2,15 +2,25 @@
   "name": "fixr-ai-agent",
   "version": "1.0.0",
   "description": "AI tech support agent for the bolt hackathon",
-  "main": "agent.py",
+  "main": "public/electron.js",
+  "homepage": "./",
   "scripts": {
-    "install-mcp-deps": "npm install -g mcp-server-commands @modelcontextprotocol/server-memory"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "electron": "electron .",
+    "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-pack": "electron-builder",
+    "preelectron-pack": "npm run build"
   },
   "keywords": [
     "ai",
     "tech-support",
     "mcp",
-    "agent"
+    "agent",
+    "electron",
+    "react"
   ],
   "authors": [
     "Geith Amum",
@@ -18,12 +28,42 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "mcp-server-commands": "latest",
-    "@modelcontextprotocol/server-memory": "latest"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "lucide-react": "^0.263.1"
   },
-  "devDependencies": {},
-  "repository": {
-    "type": "git",
-    "url": ""
+  "devDependencies": {
+    "electron": "^25.3.1",
+    "electron-builder": "^24.6.3",
+    "concurrently": "^8.2.0",
+    "wait-on": "^7.0.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "build": {
+    "appId": "com.fixr.ai-agent",
+    "productName": "Fixr AI Agent",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "build/**/*",
+      "public/electron.js",
+      "agent.py",
+      "mcp_agent.config.yaml",
+      "mcp_agent.secrets.yaml",
+      "Everything64.dll"
+    ]
   }
 }
