@@ -1,0 +1,27 @@
+{
+  "name": "fixr-project",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "install-all": "cd frontend && npm install && cd ../desktop && npm install",
+    "dev": "cd frontend && npm run dev",
+    "dev-desktop": "cd desktop && npm run dev-desktop",
+    "build": "cd frontend && npm run build",
+    "build-desktop": "cd desktop && npm run build-desktop",
+    "start-backend": "cd backend && python server.py",
+    "electron": "cd desktop && npm run electron",
+    "start": "npm run electron",
+    "dist": "cd desktop && npm run dist",
+    "setup-windows": "setup-windows.bat",
+    "start-windows": "start-windows.bat",
+    "setup": "./setup.sh",
+    "start-app": "./start.sh",
+    "start-dev": "./start-dev.sh",
+    "build-app": "./build.sh"
+  },
+  "workspaces": [
+    "frontend",
+    "desktop"
+  ]
+}
