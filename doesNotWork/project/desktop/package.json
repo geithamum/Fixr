@@ -1,0 +1,94 @@
+{
+  "name": "fixr-desktop",
+  "private": true,
+  "version": "1.0.0",
+  "description": "FIXR - AI Problem Solver Desktop Application",
+  "author": "Neil Bhalla & Geith Amum",
+  "main": "electron.js",
+  "homepage": "./",
+  "type": "module",
+  "scripts": {
+    "dev": "cd ../frontend && npm run dev",
+    "dev-desktop": "concurrently \"cd ../frontend && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "cd ../frontend && npm run build && node copy-dist.js",
+    "build-desktop": "npm run build && electron-builder",
+    "lint": "cd ../frontend && npm run lint",
+    "preview": "cd ../frontend && npm run preview",
+    "electron": "electron .",
+    "electron-dev": "concurrently \"cd ../frontend && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron-pack": "npm run build && electron-builder",
+    "preelectron-pack": "npm run build",
+    "start-backend": "cd ../backend && python server.py",
+    "start": "npm run build && npm run electron",
+    "dist": "npm run build && electron-builder --publish=never",
+    "portable": "npm run build && electron-builder --publish=never --config.nsis.oneClick=false --config.nsis.allowToChangeInstallationDirectory=true"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "28.0.0",
+    "electron-builder": "^24.9.1",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.fixr.desktop",
+    "productName": "FIXR",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron.js",
+      "preload.js",
+      "assets/**/*",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../backend",
+        "to": "backend",
+        "filter": [
+          "**/*",
+          "!**/__pycache__/**",
+          "!**/*.pyc",
+          "!.env"
+        ]
+      }
+    ],
+    "mac": {
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "FIXR"
+    },
+    "portable": {
+      "artifactName": "FIXR-Portable-${version}.${ext}"
+    }
+  }
+}
