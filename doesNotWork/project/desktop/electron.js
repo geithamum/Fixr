@@ -107,7 +107,16 @@ function startPythonFromPath(pythonCmd, backendPath, serverPath) {
       cwd: backendPath 
     });
     
-    backendProcess = spawn(pythonCmd, ['server.py'], spawnOptions);
+    const serverExe = path.join(backendPath, 'server.exe');
+    backendProcess = spawn(serverExe, [], {
+      cwd: backendPath,
+      detached: true,
+      stdio: 'ignore', // or 'inherit' to debug
+      windowsHide: true
+    });
+
+    backendProcess.unref();
+
     
     if (!backendProcess || !backendProcess.pid) {
       console.error('❌ Failed to spawn Python process');

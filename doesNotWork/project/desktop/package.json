@@ -8,20 +8,20 @@
   "homepage": "./",
   "type": "module",
   "scripts": {
-    "dev": "cd ../frontend && npm run dev",
-    "dev-desktop": "concurrently \"cd ../frontend && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "build": "cd ../frontend && npm run build && node copy-dist.js",
-    "build-desktop": "npm run build && electron-builder",
-    "lint": "cd ../frontend && npm run lint",
-    "preview": "cd ../frontend && npm run preview",
-    "electron": "electron .",
-    "electron-dev": "concurrently \"cd ../frontend && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron-pack": "npm run build && electron-builder",
-    "preelectron-pack": "npm run build",
-    "start-backend": "cd ../backend && python server.py",
-    "start": "npm run build && npm run electron",
-    "dist": "npm run build && electron-builder --publish=never",
-    "portable": "npm run build && electron-builder --publish=never --config.nsis.oneClick=false --config.nsis.allowToChangeInstallationDirectory=true"
+  "dev": "cd ../frontend && npm run dev",
+  "dev-desktop": "concurrently \"cd ../frontend && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+  "build": "cd ../frontend && npm run build && cd ../desktop && node copy-dist.js",
+  "build-desktop": "npm run build && electron-builder",
+  "lint": "cd ../frontend && npm run lint",
+  "preview": "cd ../frontend && npm run preview",
+  "electron": "electron .",
+  "electron-dev": "concurrently \"cd ../frontend && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+  "electron-pack": "npm run build && electron-builder",
+  "preelectron-pack": "npm run build",
+  "start-backend": "cd ../backend && python server.py",
+  "start": "npm run build && npm run electron",
+  "dist": "npm run build && electron-builder --publish=never",
+  "portable": "npm run build && electron-builder --publish=never --config.nsis.oneClick=false --config.nsis.allowToChangeInstallationDirectory=true"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
@@ -40,7 +40,9 @@
       "electron.js",
       "preload.js",
       "assets/**/*",
-      "node_modules/**/*"
+      "node_modules/**/*",
+      "backend/server.exe"
+
     ],
     "extraResources": [
       {
