@@ -9,9 +9,12 @@ import platform
 import os
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
-from message import process_message
+import asyncio
+import subprocess
+import message
 
 class ServerHandler(BaseHTTPRequestHandler):
+    
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -26,7 +29,7 @@ class ServerHandler(BaseHTTPRequestHandler):
             query = urlparse(self.path).query
             params = parse_qs(query)
             if 'expression' in params:
-                result = process_message(params['expression'][0])
+                result = asyncio.run(message.process_message(params['expression'][0]))
                 self.send_json_response({'success': True, 'result': result})
             else:
                 self.send_json_response({'success': False, 'error': 'Missing expression'}, 400)
@@ -39,12 +42,12 @@ class ServerHandler(BaseHTTPRequestHandler):
                 content_length = int(self.headers['Content-Length'])
                 data = json.loads(self.rfile.read(content_length).decode('utf-8'))
                 if 'expression' in data:
-                    result = process_message(data['expression'])
+                    result = asyncio.run(message.process_message(data['expression']))
                     self.send_json_response({'success': True, 'result': result})
                 else:
                     self.send_json_response({'success': False, 'error': 'Missing expression'}, 400)
-            except:
-                self.send_json_response({'success': False, 'error': 'Invalid JSON'}, 400)
+            except Exception as e:
+                self.send_json_response({'success': False, 'error': f"{e}"}, 400)
         else:
             self.send_json_response({'success': False, 'error': 'Not found'}, 404)
     
