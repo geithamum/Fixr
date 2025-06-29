@@ -17,3 +17,6 @@ mcp:
         "-y", 
         "@modelcontextprotocol/server-memory"
       ]
+
+openai:
+  default_model: gpt-4o
