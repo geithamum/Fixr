@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { existsSync } from 'fs';
 import { spawn } from 'child_process';
-
+import log  from 'electron-log/main.js'
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const isDev = process.env.NODE_ENV === 'development';
@@ -13,7 +13,7 @@ let backendProcess = null;
 
 // Function to start Python backend
 function startPythonBackend() {
-  console.log('🐍 Starting Python backend...');
+  log.info('🐍 Starting Python backend...');
   
   // Determine Python command based on platform
   const isWindows = process.platform === 'win32';
@@ -46,17 +46,17 @@ function startPythonBackend() {
     }
   }
   
-  console.log('🔍 Backend path:', backendPath);
-  console.log('🔍 Server script:', serverPath);
-  console.log('🔍 Python command:', pythonCmd);
-  console.log('🔍 Is packaged app:', !isDev);
-  console.log('🔍 Process resourcesPath:', process.resourcesPath);
-  console.log('🔍 Process cwd:', process.cwd());
-  console.log('🔍 __dirname:', __dirname);
+  log.info('🔍 Backend path:', backendPath);
+  log.info('🔍 Server script:', serverPath);
+  log.info('🔍 Python command:', pythonCmd);
+  log.info('🔍 Is packaged app:', !isDev);
+  log.info('🔍 Process resourcesPath:', process.resourcesPath);
+  log.info('🔍 Process cwd:', process.cwd());
+  log.info('🔍 __dirname:', __dirname);
   
   // Check if server.py exists
   if (!existsSync(serverPath)) {
-    console.error('❌ server.py not found at:', serverPath);
+    log.error('❌ server.py not found at:', serverPath);
     
     // Try multiple fallback paths for packaged app
     const fallbackPaths = [
@@ -68,9 +68,9 @@ function startPythonBackend() {
     ];
     
     for (const fallbackPath of fallbackPaths) {
-      console.log('🔍 Trying fallback path:', fallbackPath);
+      log.info('🔍 Trying fallback path:', fallbackPath);
       if (existsSync(fallbackPath)) {
-        console.log('✅ Found backend at fallback:', fallbackPath);
+        log.info('✅ Found backend at fallback:', fallbackPath);
         backendPath = dirname(fallbackPath);
         serverPath = fallbackPath;
         break;
@@ -78,7 +78,7 @@ function startPythonBackend() {
     }
     
     if (!existsSync(serverPath)) {
-      console.error('❌ Backend not found in any expected location');
+      log.error('❌ Backend not found in any expected location');
       return false;
     }
   }
@@ -101,39 +101,40 @@ function startPythonFromPath(pythonCmd, backendPath, serverPath) {
       }
     };
     
-    console.log('🚀 Spawning Python with options:', { 
+    log.info('🚀 Spawning Python with options:', { 
       cmd: pythonCmd, 
       args: ['server.py'],
       cwd: backendPath 
     });
     
-    const serverExe = path.join(backendPath, 'server.exe');
+    const serverExe = join(backendPath, 'dist', 'server.exe');
+    log.info(serverExe)
     backendProcess = spawn(serverExe, [], {
       cwd: backendPath,
       detached: true,
       stdio: 'ignore', // or 'inherit' to debug
-      windowsHide: true
+      windowsHide: false
     });
 
     backendProcess.unref();
 
     
     if (!backendProcess || !backendProcess.pid) {
-      console.error('❌ Failed to spawn Python process');
+      log.error('❌ Failed to spawn Python process');
       return false;
     }
     
-    console.log('🚀 Backend process started with PID:', backendProcess.pid);
+    log.info('🚀 Backend process started with PID:', backendProcess.pid);
     
     // Handle backend output with better logging
     backendProcess.stdout.on('data', (data) => {
       const output = data.toString().trim();
       if (output) {
-        console.log('🐍 Backend stdout:', output);
+        log.info('🐍 Backend stdout:', output);
         
         // Check for successful startup messages
         if (output.includes('starting on port') || output.includes('Server URL')) {
-          console.log('✅ Backend server started successfully');
+          log.info('✅ Backend server started successfully');
         }
       }
     });
@@ -141,18 +142,18 @@ function startPythonFromPath(pythonCmd, backendPath, serverPath) {
     backendProcess.stderr.on('data', (data) => {
       const error = data.toString().trim();
       if (error && !error.includes('WARNING') && !error.toLowerCase().includes('deprecation')) {
-        console.error('🐍 Backend stderr:', error);
+        log.error('🐍 Backend stderr:', error);
       }
     });
     
     // Handle backend process exit
     backendProcess.on('exit', (code, signal) => {
-      console.log(`🐍 Backend process exited with code ${code}, signal ${signal}`);
+      log.info(`🐍 Backend process exited with code ${code}, signal ${signal}`);
       backendProcess = null;
       
       // Try to restart backend if it crashes unexpectedly
       if (code !== 0 && code !== null && !isDev) {
-        console.log('🔄 Backend crashed, attempting restart in 5 seconds...');
+        log.info('🔄 Backend crashed, attempting restart in 5 seconds...');
         setTimeout(() => {
           if (!backendProcess) {
             startPythonBackend();
@@ -162,27 +163,27 @@ function startPythonFromPath(pythonCmd, backendPath, serverPath) {
     });
     
     backendProcess.on('error', (error) => {
-      console.error('🐍 Backend process error:', error.message);
+      log.error('🐍 Backend process error:', error.message);
       
       // Try alternative Python commands
       if (error.code === 'ENOENT') {
-        console.log('🔄 Trying alternative Python commands...');
+        log.info('🔄 Trying alternative Python commands...');
         const altCommands = process.platform === 'win32' 
           ? ['py', 'python3', 'python.exe']
           : ['python3', 'python', 'python3.11', 'python3.10'];
         
         for (const altCmd of altCommands) {
           if (altCmd !== pythonCmd) {
-            console.log(`🔄 Trying ${altCmd}...`);
+            log.info(`🔄 Trying ${altCmd}...`);
             try {
               const altOptions = { ...spawnOptions };
               backendProcess = spawn(altCmd, ['server.py'], altOptions);
               if (backendProcess && backendProcess.pid) {
-                console.log(`✅ Backend started with ${altCmd}, PID:`, backendProcess.pid);
+                log.info(`✅ Backend started with ${altCmd}, PID:`, backendProcess.pid);
                 return true;
               }
             } catch (e) {
-              console.log(`❌ ${altCmd} failed:`, e.message);
+              log.info(`❌ ${altCmd} failed:`, e.message);
             }
           }
         }
@@ -193,7 +194,7 @@ function startPythonFromPath(pythonCmd, backendPath, serverPath) {
     
     return true;
   } catch (error) {
-    console.error('🐍 Error starting backend:', error.message);
+    log.error('🐍 Error starting backend:', error.message);
     return false;
   }
 }
@@ -201,7 +202,7 @@ function startPythonFromPath(pythonCmd, backendPath, serverPath) {
 // Function to stop Python backend
 function stopPythonBackend() {
   if (backendProcess) {
-    console.log('🛑 Stopping Python backend...');
+    log.info('🛑 Stopping Python backend...');
     
     try {
       // Try graceful shutdown first
@@ -218,13 +219,13 @@ function stopPythonBackend() {
       // Force kill after 5 seconds if still running
       setTimeout(() => {
         if (backendProcess && !backendProcess.killed) {
-          console.log('🔥 Force killing backend process...');
+          log.info('🔥 Force killing backend process...');
           backendProcess.kill('SIGKILL');
         }
       }, 5000);
       
     } catch (error) {
-      console.error('🛑 Error stopping backend:', error.message);
+      log.error('🛑 Error stopping backend:', error.message);
     }
     
     backendProcess = null;
@@ -236,8 +237,8 @@ function createWindow() {
   const iconPath = join(__dirname, 'assets', 'icon.png');
   const iconExists = existsSync(iconPath);
   
-  console.log('🎨 Icon path:', iconPath);
-  console.log('🎨 Icon exists:', iconExists);
+  log.info('🎨 Icon path:', iconPath);
+  log.info('🎨 Icon exists:', iconExists);
   
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -259,17 +260,17 @@ function createWindow() {
   });
 
   // Start Python backend before loading the UI
-  console.log('🚀 Starting backend before UI load...');
+  log.info('🚀 Starting backend before UI load...');
   const backendStarted = startPythonBackend();
   
   if (backendStarted) {
-    console.log('✅ Backend startup initiated');
+    log.info('✅ Backend startup initiated');
     // Give backend more time to start before loading UI
     setTimeout(() => {
       loadMainWindow();
     }, 4000); // Increased from 3000 to 4000ms for packaged apps
   } else {
-    console.log('⚠️ Backend failed to start, loading UI anyway');
+    log.info('⚠️ Backend failed to start, loading UI anyway');
     setTimeout(() => {
       loadMainWindow();
     }, 1000);
@@ -279,19 +280,19 @@ function createWindow() {
     // Determine what to load
     if (isDev) {
       // Development mode - load from Vite dev server
-      console.log('🔧 Development mode: Loading from Vite dev server');
+      log.info('🔧 Development mode: Loading from Vite dev server');
       mainWindow.loadURL('http://localhost:5173');
       mainWindow.webContents.openDevTools();
     } else {
       // Production mode - load from built files
       const indexPath = join(__dirname, 'dist/index.html');
-      console.log('📦 Production mode: Loading from', indexPath);
+      log.info('📦 Production mode: Loading from', indexPath);
       
       if (existsSync(indexPath)) {
         mainWindow.loadFile(indexPath);
-        console.log('✅ Successfully loaded index.html');
+        log.info('✅ Successfully loaded index.html');
       } else {
-        console.error('❌ index.html not found at:', indexPath);
+        log.error('❌ index.html not found at:', indexPath);
         
         // Fallback: create a simple error page
         const errorHtml = `
@@ -348,17 +349,17 @@ function createWindow() {
     mainWindow.show();
     
     if (isDev) {
-      console.log('🚀 FIXR Desktop ready in development mode!');
-      console.log('🔧 Frontend: http://localhost:5173');
+      log.info('🚀 FIXR Desktop ready in development mode!');
+      log.info('🔧 Frontend: http://localhost:5173');
     } else {
-      console.log('🚀 FIXR Desktop ready!');
+      log.info('🚀 FIXR Desktop ready!');
     }
     
     if (backendProcess && backendProcess.pid) {
-      console.log('🐍 Backend running on: http://localhost:8080');
-      console.log('🐍 Backend PID:', backendProcess.pid);
+      log.info('🐍 Backend running on: http://localhost:8080');
+      log.info('🐍 Backend PID:', backendProcess.pid);
     } else {
-      console.log('⚠️ Backend not running - some features may not work');
+      log.info('⚠️ Backend not running - some features may not work');
     }
   });
 
@@ -370,19 +371,19 @@ function createWindow() {
 
   // Handle app closing - make sure to stop backend
   mainWindow.on('closed', () => {
-    console.log('🪟 Main window closed');
+    log.info('🪟 Main window closed');
     stopPythonBackend();
     mainWindow = null;
   });
 
   // Debug: Log when page finishes loading
   mainWindow.webContents.on('did-finish-load', () => {
-    console.log('✓ Page finished loading');
+    log.info('✓ Page finished loading');
   });
 
   // Debug: Log any load failures
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
-    console.error('❌ Page failed to load:', errorDescription, 'URL:', validatedURL);
+    log.error('❌ Page failed to load:', errorDescription, 'URL:', validatedURL);
   });
 }
 
@@ -431,7 +432,7 @@ ipcMain.handle('backend-status', () => {
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
-  console.log('🚪 All windows closed');
+  log.info('🚪 All windows closed');
   stopPythonBackend();
   if (process.platform !== 'darwin') {
     app.quit();
@@ -446,17 +447,17 @@ app.on('activate', () => {
 
 // Handle app quit - ensure backend is stopped
 app.on('before-quit', (event) => {
-  console.log('🚪 App is quitting...');
+  log.info('🚪 App is quitting...');
   if (backendProcess) {
-    console.log('⏳ Stopping backend before quit...');
+    log.info('⏳ Stopping backend before quit...');
     stopPythonBackend();
   }
 });
 
 app.on('will-quit', (event) => {
-  console.log('🚪 App will quit...');
+  log.info('🚪 App will quit...');
   if (backendProcess) {
-    console.log('⏳ Waiting for backend to stop...');
+    log.info('⏳ Waiting for backend to stop...');
     event.preventDefault();
     
     // Give backend time to stop gracefully
@@ -469,10 +470,10 @@ app.on('will-quit', (event) => {
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  console.error('🚨 Uncaught Exception:', error);
+  log.error('🚨 Uncaught Exception:', error);
   stopPythonBackend();
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('🚨 Unhandled Rejection at:', promise, 'reason:', reason);
+  log.error('🚨 Unhandled Rejection at:', promise, 'reason:', reason);
 });

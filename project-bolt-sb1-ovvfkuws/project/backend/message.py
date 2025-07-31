@@ -25,8 +25,6 @@ async def process_message(user_input: str):
     async with app.run() as agent_app:
         logger = agent_app.logger
         context = agent_app.context
-
-        logger.info("Current config:", data=context.config.model_dump())
         
         os_agent = Agent(
             name="windows_assistant",

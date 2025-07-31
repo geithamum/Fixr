@@ -8,26 +8,27 @@
   "homepage": "./",
   "type": "module",
   "scripts": {
-  "dev": "cd ../frontend && npm run dev",
-  "dev-desktop": "concurrently \"cd ../frontend && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-  "build": "cd ../frontend && npm run build && cd ../desktop && node copy-dist.js",
-  "build-desktop": "npm run build && electron-builder",
-  "lint": "cd ../frontend && npm run lint",
-  "preview": "cd ../frontend && npm run preview",
-  "electron": "electron .",
-  "electron-dev": "concurrently \"cd ../frontend && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-  "electron-pack": "npm run build && electron-builder",
-  "preelectron-pack": "npm run build",
-  "start-backend": "cd ../backend && python server.py",
-  "start": "npm run build && npm run electron",
-  "dist": "npm run build && electron-builder --publish=never",
-  "portable": "npm run build && electron-builder --publish=never --config.nsis.oneClick=false --config.nsis.allowToChangeInstallationDirectory=true"
+    "dev": "cd ../frontend && npm run dev",
+    "dev-desktop": "concurrently \"cd ../frontend && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "cd ../frontend && npm run build && cd ../desktop && node copy-dist.js",
+    "build-desktop": "npm run build && electron-builder",
+    "lint": "cd ../frontend && npm run lint",
+    "preview": "cd ../frontend && npm run preview",
+    "electron": "electron .",
+    "electron-dev": "concurrently \"cd ../frontend && npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron-pack": "npm run build && electron-builder",
+    "preelectron-pack": "npm run build",
+    "start-backend": "cd ../backend && python server.py",
+    "start": "npm run build && npm run electron",
+    "dist": "npm run build && electron-builder --publish=never",
+    "portable": "npm run build && electron-builder --publish=never --config.nsis.oneClick=false --config.nsis.allowToChangeInstallationDirectory=true"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "electron": "28.0.0",
-    "electron-builder": "^24.9.1",
-    "wait-on": "^7.2.0"
+    "concurrently": "8.2.2",
+    "electron": "37.2.3",
+    "electron-builder": "24.9.1",
+    "electron-log": "5.4.1",
+    "wait-on": "7.2.0"
   },
   "build": {
     "appId": "com.fixr.desktop",
@@ -41,8 +42,7 @@
       "preload.js",
       "assets/**/*",
       "node_modules/**/*",
-      "backend/server.exe"
-
+      "backend/dist/server.exe"
     ],
     "extraResources": [
       {
@@ -65,11 +65,15 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
@@ -78,7 +82,9 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },

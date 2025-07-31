@@ -23,5 +23,9 @@
   "workspaces": [
     "frontend",
     "desktop"
-  ]
+  ],
+  "dependencies": {
+    "electron": "^37.2.3",
+    "electron-log": "^5.4.1"
+  }
 }

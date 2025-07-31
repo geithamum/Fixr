@@ -7,6 +7,7 @@ import json
 import sys
 import platform
 import os
+import asyncio
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from message import process_message
@@ -26,7 +27,7 @@ class ServerHandler(BaseHTTPRequestHandler):
             query = urlparse(self.path).query
             params = parse_qs(query)
             if 'expression' in params:
-                result = process_message(params['expression'][0])
+                result = asyncio.get_event_loop().run_until_complete(process_message(params['expression'][0]))
                 self.send_json_response({'success': True, 'result': result})
             else:
                 self.send_json_response({'success': False, 'error': 'Missing expression'}, 400)
@@ -39,7 +40,7 @@ class ServerHandler(BaseHTTPRequestHandler):
                 content_length = int(self.headers['Content-Length'])
                 data = json.loads(self.rfile.read(content_length).decode('utf-8'))
                 if 'expression' in data:
-                    result = process_message(data['expression'])
+                    result = asyncio.get_event_loop().run_until_complete(process_message(data['expression']))
                     self.send_json_response({'success': True, 'result': result})
                 else:
                     self.send_json_response({'success': False, 'error': 'Missing expression'}, 400)

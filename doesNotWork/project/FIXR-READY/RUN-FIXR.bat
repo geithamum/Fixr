@@ -1,0 +1,3 @@
+@echo off 
+echo Starting FIXR... 
+start "" "FIXR-Portable-1.0.0.exe" 

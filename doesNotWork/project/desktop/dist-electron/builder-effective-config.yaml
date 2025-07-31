@@ -1,0 +1,48 @@
+directories:
+  output: dist-electron
+  buildResources: build
+appId: com.fixr.desktop
+productName: FIXR
+files:
+  - filter:
+      - dist/**/*
+      - electron.js
+      - preload.js
+      - assets/**/*
+      - node_modules/**/*
+      - backend/dist/server.exe
+extraResources:
+  - from: ../backend
+    to: backend
+    filter:
+      - '**/*'
+      - '!**/__pycache__/**'
+      - '!**/*.pyc'
+      - '!.env'
+mac:
+  icon: assets/icon.icns
+  category: public.app-category.productivity
+win:
+  icon: assets/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+linux:
+  icon: assets/icon.png
+  target:
+    - target: AppImage
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: FIXR
+portable:
+  artifactName: FIXR-Portable-${version}.${ext}
+electronVersion: 37.2.3
